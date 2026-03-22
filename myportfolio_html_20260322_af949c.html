@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Piyush Chaudhary · cinematic editor</title>
+  <!-- Font Awesome 6 (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Fonts: Inter & Playfair for documentary touch -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,800&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
+  <!-- AOS scroll animation -->
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+  <!-- Calendly widget (for scheduling) -->
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #0b0c10;
+      color: #e0e0e0;
+      font-family: 'Inter', sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* background image with dark overlay */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url('https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=2070&auto=format'); /* cinematic editing table */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: brightness(0.2) contrast(1.2);
+      z-index: -2;
+    }
+
+    /* moving gradient orbs (high‑tech feel) on top of background */
+    .blob {
+      position: fixed;
+      width: 60vmax;
+      height: 60vmax;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(0, 229, 255, 0.25), rgba(255, 0, 100, 0.1));
+      filter: blur(90px);
+      z-index: -1;
+      animation: blobMove 30s infinite alternate ease-in-out;
+    }
+    .blob2 {
+      width: 80vmin;
+      height: 80vmin;
+      background: radial-gradient(circle, rgba( 98, 0, 234, 0.25), transparent 70%);
+      bottom: 0; right: 0;
+      animation: blobMove 25s infinite alternate-reverse;
+    }
+    @keyframes blobMove {
+      0% { transform: translate(-10%, -10%) scale(1); }
+      100% { transform: translate(15%, 15%) scale(1.2); }
+    }
+
+    /* film grain overlay */
+    .grain {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJmIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBudW1PY3RhdmVzPSIzIiAvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNmKSIgb3BhY2l0eT0iMC4wMjUiIC8+PC9zdmc+');
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.15;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 10;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 4rem;
+    }
+
+    h1, h2, h3 {
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    h1 {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      line-height: 1;
+      background: linear-gradient(135deg, #ffffff 0%, #b0b0ff 60%, #00e5ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.3rem;
+    }
+    .film-sub {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: #a0a0b0;
+      font-size: 1.2rem;
+      border-left: 3px solid #00e5ff;
+      padding-left: 1.5rem;
+      margin: 1rem 0 2rem;
+    }
+
+    /* 3D rotating camera (simple CSS 3D) */
+    .camera-3d {
+      width: 80px;
+      height: 80px;
+      margin: 20px auto;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: rotate3d 10s infinite linear;
+    }
+    @keyframes rotate3d {
+      0% { transform: rotateX(0deg) rotateY(0deg); }
+      100% { transform: rotateX(360deg) rotateY(360deg); }
+    }
+    .camera-3d div {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: rgba(0, 229, 255, 0.3);
+      border: 2px solid #ff0069;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      color: white;
+      box-shadow: 0 0 20px #00e5ff;
+      border-radius: 8px;
+    }
+    .front  { transform: translateZ(30px); }
+    .back   { transform: rotateY(180deg) translateZ(30px); }
+    .left   { transform: rotateY(-90deg) translateZ(30px); }
+    .right  { transform: rotateY(90deg) translateZ(30px); }
+    .top    { transform: rotateX(90deg) translateZ(30px); }
+    .bottom { transform: rotateX(-90deg) translateZ(30px); }
+
+    /* cards */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.8rem;
+      margin: 4rem 0;
+    }
+    .service-card {
+      background: rgba(15, 20, 30, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.03);
+      border-radius: 32px;
+      padding: 2rem 1.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 20px 30px -15px rgba(0,0,0,0.7);
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 32px;
+      padding: 2px;
+      background: linear-gradient(145deg, #00e5ff00, #00e5ff30, #ff006900);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    .service-card:hover {
+      transform: translateY(-8px);
+      border-color: #00e5ff30;
+      box-shadow: 0 30px 40px -15px #00e5ff40;
+    }
+    .service-icon {
+      font-size: 2.8rem;
+      background: linear-gradient(45deg, #00e5ff, #a55cff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+
+    /* portfolio & before/after slider */
+    .ba-slider {
+      position: relative;
+      width: 100%;
+      border-radius: 24px;
+      overflow: hidden;
+      margin: 3rem 0;
+    }
+    .ba-img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .ba-before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 50%;
+      overflow: hidden;
+      border-right: 3px solid #ff0069;
+    }
+    .ba-before img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: left;
+    }
+    .ba-slider input {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 20;
+    }
+
+    /* color grading switcher */
+    .grade-switcher {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+    .grade-btn {
+      padding: 0.5rem 1.5rem;
+      border: 2px solid #00e5ff;
+      background: transparent;
+      color: white;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-weight: 600;
+    }
+    .grade-btn.active, .grade-btn:hover {
+      background: #00e5ff;
+      color: #0b0c10;
+    }
+    .grade-demo {
+      width: 100%;
+      height: 300px;
+      background-image: url('https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=2070&auto=format');
+      background-size: cover;
+      background-position: center;
+      border-radius: 30px;
+      transition: 0.3s;
+      margin: 2rem 0;
+    }
+
+    /* video showreel section (real videos can be added) */
+    .showreel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    .video-card {
+      border-radius: 24px;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      background: #1a1f2e;
+      border: 2px solid #2a2f50;
+    }
+    .video-card video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* testimonial carousel */
+    .testimonial {
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      border-radius: 40px;
+      padding: 2rem;
+      border: 1px solid #ff006940;
+      margin: 2rem 0;
+    }
+
+    /* cta */
+    .cta-block {
+      text-align: center;
+      background: rgba(0, 229, 255, 0.05);
+      border-radius: 60px;
+      padding: 3rem 2rem;
+      margin: 5rem 0 2rem;
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      backdrop-filter: blur(12px);
+    }
+    .cta-button {
+      display: inline-block;
+      padding: 1.2rem 3rem;
+      border-radius: 60px;
+      background: linear-gradient(135deg, #00e5ff, #a55cff);
+      color: #0b0c10;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-decoration: none;
+      font-size: 1.3rem;
+      margin-top: 2rem;
+      box-shadow: 0 20px 30px -10px #00e5ff80;
+      transition: 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .cta-button:hover {
+      box-shadow: 0 30px 40px -5px #ff0069b0;
+      transform: scale(1.02);
+    }
+
+    /* BTS section */
+    .bts-grid {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+    .bts-grid img {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 30px;
+      border: 2px solid #00e5ff;
+    }
+
+    @media (max-width: 800px) {
+      .wrapper { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grain"></div>
+  <div class="blob" style="top: -10%; left: -10%;"></div>
+  <div class="blob blob2" style="bottom: -20%; right: -10%;"></div>
+
+  <div class="wrapper">
+    <!-- 3D camera element -->
+    <div class="camera-3d">
+      <div class="front"><i class="fas fa-camera"></i></div>
+      <div class="back"><i class="fas fa-film"></i></div>
+      <div class="left"><i class="fas fa-cut"></i></div>
+      <div class="right"><i class="fas fa-sliders-h"></i></div>
+      <div class="top"><i class="fas fa-paint-brush"></i></div>
+      <div class="bottom"><i class="fas fa-magic"></i></div>
+    </div>
+
+    <!-- HERO -->
+    <section data-aos="fade-up">
+      <p style="color:#00e5ff; font-weight:500;">BCA student · PSIT College of Higher Education</p>
+      <h1>Piyush Chaudhary</h1>
+      <div class="film-sub">cinematic storyteller · high‑tech editor</div>
+      <p style="max-width: 700px; font-size: 1.2rem;">I turn raw footage into visually addictive stories — from cinematic reels to long‑form podcasts. Let’s create something powerful.</p>
+    </section>
+
+    <!-- Intro / About (with your exact words) -->
+    <section class="signature-line" style="background: rgba(0,0,0,0.5); padding:2rem; border-radius:40px; margin:2rem 0;" data-aos="fade-up">
+      <i class="fas fa-quote-left" style="color:#00e5ff; font-size:2rem;"></i>
+      <p style="font-size:1.2rem;">My name is Piyush Chaudhary, a BCA student from PSIT College of Higher Education. I am a passionate video editor focused on creating engaging, high-quality visual content using tools like CapCut, Filmora, and Adobe After Effects. I specialize in short-form content, cinematic edits, and creative storytelling that captures attention and keeps viewers hooked.</p>
+    </section>
+
+    <!-- Color Grader Switcher (interactive demo) -->
+    <h2>🎨 try my color grading</h2>
+    <div class="grade-switcher">
+      <button class="grade-btn active" data-grade="cinematic">Cinematic</button>
+      <button class="grade-btn" data-grade="vibrant">Vibrant</button>
+      <button class="grade-btn" data-grade="bw">Black & White</button>
+    </div>
+    <div class="grade-demo" id="grade-demo"></div>
+
+    <!-- Services Cards -->
+    <h2 style="margin-top:4rem;">craft & post‑production</h2>
+    <div class="card-grid">
+      <div class="service-card"><div class="service-icon"><i class="fas fa-camera-retro"></i></div><h3>cinematography</h3><p>HD adjustments, cinematic color grading.</p></div>
+      <div class="service-card"><div class="service-icon"><i class="fas fa-podcast"></i></div><h3>podcast editing</h3><p>long‑form YouTube podcasts, multi‑cam.</p></div>
+      <div class="service-card"><div class="service-icon"><i class="fas fa-film"></i></div><h3>long‑form video</h3><p>vlogs, docs, interviews — seamless flow.</p></div>
+      <div class="service-card"><div class="service-icon"><i class="fas fa-mobile-alt"></i></div><h3>reels & shorts</h3><p>trendy transitions, sound design, viral effects.</p></div>
+      <div class="service-card"><div class="service-icon"><i class="fas fa-paint-brush"></i></div><h3>thumbnail design</h3><p>high‑contrast, click‑optimised thumbnails.</p></div>
+      <div class="service-card"><div class="service-icon"><i class="fas fa-sliders-h"></i></div><h3>color grading</h3><p>cinematic luts, mood adjustments.</p></div>
+      <div class="service-card"><div class="service-icon"><i class="fas fa-magic"></i></div><h3>AI‑powered VFX</h3><p>After Effects & AI tools for motion graphics.</p></div>
+    </div>
+
+    <!-- Before/After Slider (case study) -->
+    <h2>before · after</h2>
+    <div class="ba-slider">
+      <img class="ba-img" src="https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=600" alt="original">
+      <div class="ba-before">
+        <img src="https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=600&bw=1" alt="graded">
+      </div>
+      <input type="range" min="0" max="100" value="50">
+    </div>
+
+    <!-- VIDEO SHOWREEL SECTION (replace with your own videos) -->
+    <h2>🎬 featured edits</h2>
+    <div class="showreel-grid">
+      <div class="video-card">
+        <video controls poster="https://images.unsplash.com/photo-1581591524425-c7e0978865fc?w=600">
+          <source src="#" type="video/mp4">
+          <!-- replace # with your video file path, e.g. "videos/showreel.mp4" -->
+        </video>
+      </div>
+      <div class="video-card">
+        <video controls poster="https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=600">
+          <source src="#" type="video/mp4">
+        </video>
+      </div>
+      <div class="video-card">
+        <video controls poster="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600">
+          <source src="#" type="video/mp4">
+        </video>
+      </div>
+    </div>
+    <p style="text-align:center; color:#00e5ff;"><i class="fas fa-info-circle"></i> to add your own videos: replace the <code>src="#"</code> with your video file path (e.g., "videos/my-reel.mp4")</p>
+
+    <!-- Testimonials -->
+    <h2>kind words</h2>
+    <div class="testimonial" data-aos="fade-up">
+      <p><i class="fas fa-star" style="color:#ff0069;"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i></p>
+      <p style="font-size:1.3rem;">"Piyush transformed our raw podcast footage into a polished, engaging show. His editing kept viewers until the last second!"</p>
+      <p>— Riya Sharma, Podcast Host</p>
+    </div>
+
+    <!-- BTS / behind the scenes -->
+    <h2>behind the scenes</h2>
+    <div class="bts-grid">
+      <img src="https://images.unsplash.com/photo-1574717024453-354056afc57d?w=200" alt="editing desk">
+      <img src="https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=200" alt="camera gear">
+      <img src="https://images.unsplash.com/photo-1572297982753-5516a59f4a0b?w=200" alt="studio">
+    </div>
+
+    <!-- CTA with Calendly (scheduling) -->
+    <div class="cta-block">
+      <h2 style="color:#fff;">ready to elevate your visuals?</h2>
+      <p>let's collaborate — book a discovery call instantly</p>
+      <button class="cta-button" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/piyush-editor/30min'});return false;">📅 schedule now</button>
+      <p style="margin-top:1rem;">or email: piyush@edit.example · @piyushcuts</p>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center; opacity:0.7; margin:3rem 0;">🎞️ Piyush Chaudhary · BCA, PSIT · documentary portfolio 2025</div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+  <script>
+    AOS.init({ duration: 900, once: true });
+
+    // Color grading switcher
+    const demoDiv = document.getElementById('grade-demo');
+    const btns = document.querySelectorAll('.grade-btn');
+    btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        btns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const grade = btn.dataset.grade;
+        if (grade === 'cinematic') demoDiv.style.filter = 'contrast(1.2) saturate(1.3) sepia(0.1)';
+        if (grade === 'vibrant') demoDiv.style.filter = 'saturate(2.5) contrast(1.1)';
+        if (grade === 'bw') demoDiv.style.filter = 'grayscale(1) contrast(1.3)';
+      });
+    });
+
+    // Before/after slider
+    const slider = document.querySelector('.ba-slider input');
+    const before = document.querySelector('.ba-before');
+    if (slider) {
+      slider.addEventListener('input', (e) => {
+        before.style.width = e.target.value + '%';
+      });
+    }
+  </script>
+  <style>
+    /* small tweaks */
+    .ba-slider { position: relative; }
+    .ba-before { position: absolute; top: 0; left: 0; width: 50%; overflow: hidden; border-right: 3px solid #ff0069; }
+    .ba-slider input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+    code { background: #222; padding: 2px 6px; border-radius: 8px; }
+  </style>
+</body>
+</html>
